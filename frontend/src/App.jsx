@@ -1,24 +1,87 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "./App.css";
 
 function App() {
-  const [response, setResponse] = useState([]);
+  const [code, setCode] = useState("");
+  const [analysis, setAnalysis] = useState({});
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchAPI = async () => {
-      const res = await fetch("http://localhost:3000/api/health");
+  const handleCodeChange = (evt) => {
+    setCode(evt.target.value);
+  };
 
-      const data = await res.json();
+  const handleAnalyze = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost:3000/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: code,
+        }),
+      });
 
-      setResponse(data);
-    };
-    fetchAPI();
-  }, []);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        return;
+      }
+
+      setAnalysis(data);
+      setError("");
+    } catch (error) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClear = () => {
+    setCode("");
+    setAnalysis({});
+    setError("");
+  };
 
   return (
-    <div>
+    <div className="app-container">
       <h1>CodeLens</h1>
-      <p>API Status:{response.status}</p>
+      <textarea
+        name="analysis"
+        className="code-editor"
+        value={code}
+        onChange={handleCodeChange}
+      ></textarea>
+
+      <div className="button-group">
+        {loading ? (
+          <p className="loading-message">Analyzing...</p>
+        ) : (
+          <button className="analyze-button" onClick={handleAnalyze}>
+            Analyze Code
+          </button>
+        )}
+
+        <button className="clear-button" onClick={handleClear}>
+          Clear
+        </button>
+      </div>
+
+      {/* error */}
+      {error && <p className="error-message">{error}</p>}
+
+      <h2>Warnings</h2>
+      <ul className="warnings-list">
+        {analysis.warnings &&
+          analysis.warnings.map((warn, index) => (
+            <li className="warning-item" key={index}>
+              {warn}
+            </li>
+          ))}
+      </ul>
     </div>
   );
 }

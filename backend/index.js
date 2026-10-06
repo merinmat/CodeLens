@@ -1,3 +1,5 @@
+const codeAnalyzer = require("./analyzer.js");
+
 const express = require("express");
 const cors = require("cors");
 
@@ -5,10 +7,23 @@ const app= express();
 
 app.use(express.json());
 app.use(cors());
-app.get("/api/health",(req, res)=>{
+
+
+app.post("/api/analyze",(req, res)=>{
+    const code = req.body.code;
+    
+    //if there is no code
+    if(code.trim()==="" || code===undefined){
+        return res.status(400).json({
+            message:"Code is required."
+        })
+    }
+
+    const warnings = codeAnalyzer(code);
+
     res.status(200).json({
-        status:"ok",
-        message: "CodeLens API is running"
+        warnings,
+        message: "Code received"
     })
 })
 
