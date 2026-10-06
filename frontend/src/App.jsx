@@ -14,15 +14,18 @@ function App() {
   const handleAnalyze = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/api/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://codelens-si3y.onrender.com/api/analyze",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: code,
+          }),
         },
-        body: JSON.stringify({
-          code: code,
-        }),
-      });
+      );
 
       const data = await response.json();
 
